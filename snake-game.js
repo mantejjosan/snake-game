@@ -13,6 +13,10 @@ let score = 0;
 let gameLoop;
 let inputQueue = [];
 
+// Touch variables
+let touchStartX = 0;
+let touchStartY = 0;
+
 // Get the canvas and context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -24,6 +28,11 @@ canvas.width = canvas.height = CANVAS_SIZE;
 function init() {
     createFood();
     document.addEventListener('keydown', handleKeyPress);
+    
+    // Add touch event listeners
+    canvas.addEventListener('touchstart', handleTouchStart, false);
+    canvas.addEventListener('touchmove', handleTouchMove, false);
+    
     gameLoop = setInterval(update, 100);
 }
 
@@ -33,6 +42,40 @@ function handleKeyPress(e) {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
         inputQueue.push(key);
     }
+}
+
+// Handle touch start
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    e.preventDefault();
+}
+
+// Handle touch move
+function handleTouchMove(e) {
+    if (!touchStartX || !touchStartY) {
+        return;
+    }
+
+    const touch = e.touches[0];
+    const touchEndX = touch.clientX;
+    const touchEndY = touch.clientY;
+
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+
+    // Determine swipe direction
+    if (Math.abs(dx) > Math.abs(dy)) {
+        inputQueue.push(dx > 0 ? 'ArrowRight' : 'ArrowLeft');
+    } else {
+        inputQueue.push(dy > 0 ? 'ArrowDown' : 'ArrowUp');
+    }
+
+    // Reset touch start coordinates
+    touchStartX = 0;
+    touchStartY = 0;
+    e.preventDefault();
 }
 
 // Update game state
